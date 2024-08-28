@@ -6,8 +6,8 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func createDatabase() {
-	db, err := sql.Open("sqlite", "schedule.db")
+func CreateDatabase() {
+	db, err := sql.Open("sqlite", "scheduler.db")
 	if err != nil {
 		fmt.Println(err)
 		return

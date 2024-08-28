@@ -1,4 +1,4 @@
-module github.com/MirekKrassilnikov/go_final_project
+module Superfinalmod
 
 go 1.21.1
 

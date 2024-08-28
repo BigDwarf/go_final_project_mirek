@@ -58,12 +58,3 @@ func NextDate(now string, date string, repeat string) (string, error) {
 
 	return "", fmt.Errorf("unknown repeat code: %s", codeAndNumber[0])
 }
-
-func main() {
-	nextDate, err := NextDate("20240126", "20240101", "d 1")
-	if err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		fmt.Println("Next Date:", nextDate)
-	}
-}
