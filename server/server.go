@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/MirekKrassilnikov/go_final_project/repeater"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -27,8 +28,91 @@ func TaskHandler(w http.ResponseWriter, r *http.Request) {
 		HandlePost(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+		//case http.MethodGet:
+		//	HandleGet(w, r)
 	}
+
 }
+func getTaskHandler(w http.ResponseWriter, r *http.Request) {
+	db, err := sql.Open("sqlite", "scheduler.db")
+	if err != nil {
+		http.Error(w, `{"error":"Failed to connect to database"}`, http.StatusInternalServerError)
+		return
+	}
+	// Получаем параметр id из запроса
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "missing id parameter", http.StatusBadRequest)
+		return
+	}
+
+	// Преобразуем id в число
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "invalid id parameter", http.StatusBadRequest)
+		return
+	}
+
+	// Выполняем SQL-запрос для получения задачи по id
+	var task Task
+	err = db.QueryRow("SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?", id).
+		Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "task not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "server error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Устанавливаем заголовок Content-Type для JSON
+	w.Header().Set("Content-Type", "application/json")
+
+	// Преобразуем задачу в JSON и отправляем ответ
+	json.NewEncoder(w).Encode(task)
+}
+
+/*func HandleGet(w http.ResponseWriter, r *http.Request) {
+	db, err := sql.Open("sqlite", "scheduler.db")
+	if err != nil {
+		http.Error(w, `{"error":"Failed to connect to database"}`, http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+	rows, err := db.Query("SELECT * FROM scheduler ORDER BY date ASC")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var tasks []Task
+	for rows.Next() {
+		var task Task
+		var date time.Time
+
+		// Сканируем поля Date, Title, Comment и Repeat из базы данных
+		err := rows.Scan(&date, &task.Title, &task.Comment, &task.Repeat)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Преобразуем дату в нужный формат 20060102
+		task.Date = date.Format("20060102")
+
+		// Добавляем задачу в срез
+		tasks = append(tasks, task)
+	}
+	response := map[string][]Task{
+		"tasks": tasks,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+*/
 
 func HandlePost(w http.ResponseWriter, r *http.Request) {
 	var task Task
