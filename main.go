@@ -52,14 +52,15 @@ func main() {
 		fmt.Println("Database already exists")
 	}
 
+	srv := server.Controller{DB: db}
 	// Создаем файловый сервер для директории web
 	fs := http.FileServer(http.Dir(webDir))
 	// Настраиваем обработчик для всех запросов
 	http.Handle("/", fs)
-	http.HandleFunc("/api/task", server.TaskHandler)
-	http.HandleFunc("/api/tasks", server.GetAllTasksHandler)
-	http.HandleFunc("/api/nextdate", server.ApiNextDateHandler)
-	http.HandleFunc("/api/task/done", server.MarkAsDone)
+	http.HandleFunc("/api/task", srv.TaskHandler)
+	http.HandleFunc("/api/tasks", srv.GetAllTasksHandler)
+	http.HandleFunc("/api/nextdate", srv.ApiNextDateHandler)
+	http.HandleFunc("/api/task/done", srv.MarkAsDone)
 	// Запускаем сервер на указанном порту
 	log.Printf("Starting server on :%s\n", port)
 	err = http.ListenAndServe(":"+port, nil)
