@@ -57,7 +57,9 @@ func main() {
 	// Настраиваем обработчик для всех запросов
 	http.Handle("/", fs)
 	http.HandleFunc("/api/task", server.TaskHandler)
+	http.HandleFunc("/api/tasks", server.GetAllTasksHandler)
 	http.HandleFunc("/api/nextdate", server.ApiNextDateHandler)
+	http.HandleFunc("/api/task/done", server.MarkAsDone)
 	// Запускаем сервер на указанном порту
 	log.Printf("Starting server on :%s\n", port)
 	err = http.ListenAndServe(":"+port, nil)
